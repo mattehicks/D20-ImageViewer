@@ -79,3 +79,6 @@ Default configuration:
 - Images are moved (not copied) to destination folders
 - Use the Reload button if you add new images to the source folder
 - Customize keyboard shortcuts in Settings to match your workflow
+
+<img width="1197" height="801" alt="image" src="https://github.com/user-attachments/assets/daa19be3-ed7d-4acb-b732-4b206fa9cb9a" />
+
