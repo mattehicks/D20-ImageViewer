@@ -1,0 +1,20 @@
+{
+  "sourceFolder": "C:\\Users\\matte\\Documents\\D20 Images",
+  "destinationFolders": {
+    "1": {
+      "name": "instagram",
+      "path": "C:\\Users\\matte\\Documents\\D20 Images\\instagram",
+      "key": "1"
+    },
+    "2": {
+      "name": "maybe",
+      "path": "C:\\Users\\matte\\Documents\\D20 Images\\maybe",
+      "key": "2"
+    },
+    "3": {
+      "name": "discard",
+      "path": "C:\\Users\\matte\\Documents\\D20 Images\\discard",
+      "key": "3"
+    }
+  }
+}

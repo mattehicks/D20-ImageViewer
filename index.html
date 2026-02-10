@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>D20 Image Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1e1e1e;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #toolbar {
+            background: #2d2d2d;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #3e3e3e;
+        }
+
+        #toolbar-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #1177bb;
+        }
+
+        button:active {
+            background: #0d5a8f;
+        }
+
+        #info {
+            font-size: 14px;
+            color: #cccccc;
+        }
+
+        #viewer-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #image {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            user-select: none;
+        }
+
+        #shortcuts {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(45, 45, 45, 0.95);
+            padding: 15px 25px;
+            padding-top: 25px;
+            border-radius: 8px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        #shortcuts.hidden {
+            display: none;
+        }
+
+        #shortcuts-close {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            color: #888;
+            text-decoration: none;
+            font-size: 11px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #shortcuts-close:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        #quick-folder-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            color: #888;
+            text-decoration: none;
+            font-size: 11px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #quick-folder-btn:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        #quick-folder-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(45, 45, 45, 0.98);
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            min-width: 250px;
+        }
+
+        #quick-folder-panel.active {
+            display: flex;
+        }
+
+        #quick-folder-panel h3 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .quick-folder-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .quick-folder-item .key {
+            min-width: 20px;
+        }
+
+        .quick-folder-item .folder-name {
+            flex: 1;
+            color: #aaa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .quick-folder-item button {
+            padding: 3px 8px;
+            font-size: 11px;
+        }
+
+        .quick-folder-close {
+            margin-top: 5px;
+            padding: 5px 10px;
+            font-size: 11px;
+        }
+
+        .shortcut {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .key {
+            background: #3e3e3e;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            min-width: 30px;
+            text-align: center;
+            border: 1px solid #555;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #cccccc;
+        }
+
+        #config-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #config-panel.active {
+            display: flex;
+        }
+
+        #config-content {
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #config-content h2 {
+            margin-bottom: 20px;
+        }
+
+        .config-group {
+            margin-bottom: 20px;
+        }
+
+        .config-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #cccccc;
+        }
+
+        .config-group input {
+            width: 100%;
+            padding: 8px;
+            background: #1e1e1e;
+            border: 1px solid #3e3e3e;
+            color: #ffffff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .folder-config {
+            background: #252525;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .config-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .select-folder-btn {
+            background: #555;
+            padding: 4px 8px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .no-image {
+            text-align: center;
+            color: #888;
+        }
+
+        #status {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            background: rgba(14, 99, 156, 0.95);
+            padding: 10px 20px;
+            border-radius: 4px;
+            display: none;
+            animation: fadeInOut 2s forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <div id="toolbar-left">
+            <button id="open-folder-btn">📁 Open Folder</button>
+            <button id="reload-btn">↻ Reload</button>
+            <button id="toggle-shortcuts-btn">? Shortcuts</button>
+        </div>
+        <div id="info">
+            <span id="image-counter">0 / 0</span>
+            <span style="margin: 0 10px;">|</span>
+            <span id="filename">No image loaded</span>
+        </div>
+    </div>
+
+    <div id="viewer-container">
+        <img id="image" alt="No image selected">
+        <div class="no-image" id="no-image-msg">
+            <h2>No images found</h2>
+            <p>Click Settings to configure your image folder</p>
+        </div>
+    </div>
+
+    <div id="shortcuts">
+        <a id="shortcuts-close">close</a>
+        <a id="quick-folder-btn">folders</a>
+        <div class="shortcut">
+            <span class="key">←</span>
+            <span class="label">Previous</span>
+        </div>
+        <div class="shortcut">
+            <span class="key">→</span>
+            <span class="label">Next</span>
+        </div>
+        <div class="shortcut">
+            <span class="key">X</span>
+            <span class="label">Delete</span>
+        </div>
+        <div id="shortcut-keys"></div>
+    </div>
+
+    <div id="quick-folder-panel">
+        <h3>Assign Folders</h3>
+        <div class="quick-folder-item">
+            <span class="key">1</span>
+            <span class="folder-name" id="qf-name-1">Not set</span>
+            <button class="qf-select" data-key="1">Set</button>
+        </div>
+        <div class="quick-folder-item">
+            <span class="key">2</span>
+            <span class="folder-name" id="qf-name-2">Not set</span>
+            <button class="qf-select" data-key="2">Set</button>
+        </div>
+        <div class="quick-folder-item">
+            <span class="key">3</span>
+            <span class="folder-name" id="qf-name-3">Not set</span>
+            <button class="qf-select" data-key="3">Set</button>
+        </div>
+        <button class="quick-folder-close" id="qf-close">Done</button>
+    </div>
+
+    <div id="config-panel">
+        <div id="config-content">
+            <h2>Settings</h2>
+            
+            <div class="config-group">
+                <label>Source Folder:</label>
+                <input type="text" id="source-folder" readonly>
+                <button class="select-folder-btn" id="select-source">Browse...</button>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">Destination Folders</h3>
+            <div id="destination-folders"></div>
+
+            <div class="config-buttons">
+                <button id="cancel-config">Cancel</button>
+                <button id="save-config">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="status"></div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
