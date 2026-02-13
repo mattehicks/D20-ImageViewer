@@ -1,6 +1,6 @@
 # Free Image Sort utility
 
-A simple, modern image viewer built with Electron for quickly browsing images and organizing them into folders using keyboard shortcuts.
+A simple, modern image viewer for quickly organizing images into folders using keyboard shortcuts.
 
 ## Features
 
